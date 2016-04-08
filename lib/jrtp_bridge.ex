@@ -32,7 +32,7 @@ defmodule JrtpBridge do
 
   @doc false
   def allowed_methods(req, state) do
-    {["GET", "PUT", "POST"], req, state}
+    {["GET", "PUT", "POST", "OPTIONS"], req, state}
   end
 
   @doc false
@@ -100,6 +100,8 @@ defmodule JrtpBridge do
     path = request_path(req)
     {vres, tree} = Hub.deltas({:undefined, 0}, path)
     req = CowboyReq.set_resp_header("x-version", ver_to_vheader(vres), req)
+    req = CowboyReq.set_resp_header("access-control-allow-methods", "GET, OPTIONS", req)
+    req = CowboyReq.set_resp_header("access-control-allow-origin", "*", req)
     req = invoke_response_hook_if_present(req, state)
     case tree do
       [] -> {"", req, state}
@@ -127,7 +129,8 @@ defmodule JrtpBridge do
     {[
       {{"application", "merge-patch+json", []}, :rfc7386_acceptor},
       {{"application", "json", []}, :json_acceptor},
-      {{"application", "x-firmware", []}, :firmware_acceptor}
+      {{"application", "x-firmware", []}, :firmware_acceptor},
+      {{"application", "file", []}, :file_acceptor}
     ], req, state}
   end
 
@@ -164,7 +167,7 @@ defmodule JrtpBridge do
         {:halt, req, state}
     end
   end
-  
+
   def firmware_acceptor(req, state) do
     case Dict.get(state, :firmware_acceptor) do
       nil ->
