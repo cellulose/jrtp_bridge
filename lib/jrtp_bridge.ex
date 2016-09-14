@@ -52,9 +52,9 @@ defmodule JrtpBridge do
   Example function requiring authorization for PUT and POST commands:
 
   ```elixir
-    {method, req} = CowboyReq.method(req)
+    {method, req} = :cowboy_req.method(req)
     if method == "PUT" or method == "POST" do
-      case CowboyReq.parse_header("authorization", req) do
+      case :cowboy_req.parse_header("authorization", req) do
         {:ok, {"basic", {user, password}}, req} ->
           if (user == "test" and password == "test") do
             {true, req, state}
