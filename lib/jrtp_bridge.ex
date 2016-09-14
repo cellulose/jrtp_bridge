@@ -44,6 +44,38 @@ defmodule JrtpBridge do
       ], req, state}
   end
 
+  @doc """
+  is_authorized/2 is a callback in the cowboy request process. To
+  enable authorization pass function under :auth_fun used to determine
+  authorization. If no function is passed all requests will be accepted.
+
+  Example function requiring authorization for PUT and POST commands:
+
+  ```elixir
+    {method, req} = CowboyReq.method(req)
+    if method == "PUT" or method == "POST" do
+      case CowboyReq.parse_header("authorization", req) do
+        {:ok, {"basic", {user, password}}, req} ->
+          if (user == "test" and password == "test") do
+            {true, req, state}
+          else
+            {{false, <<"Basic realm=\"Authorized Area\"">>}, req, state}
+          end
+        _ -> {{false, <<"Basic realm=\"Authorized Area\"">>}, req, state}
+      end
+    else
+      {true, req, state}
+    end
+  ```
+  """
+  def is_authorized(req, state) do
+    if state[:auth_fun] do
+      state.auth_fun.(req, state)
+    else
+      {true, req, state}
+    end
+  end
+
   @doc false
   def rfc7386_provider(req, state) do
     path = request_path(req)
