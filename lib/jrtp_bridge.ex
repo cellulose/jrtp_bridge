@@ -17,6 +17,11 @@ defmodule JrtpBridge do
     {:upgrade, :protocol, :cowboy_rest} #, req, state}
   end
 
+  #REVIEW: Added while trying to get cowboy 2.0 working
+  def init(req, handler_opts) do
+    {:cowboy_rest, req, handler_opts}
+  end
+
   @doc false
   def rest_init(req, handler_opts) do
     {:ok, req, handler_opts}
@@ -245,8 +250,7 @@ defmodule JrtpBridge do
   end
 
   defp request_path(req) do
-    {tokens, _} = CowboyReq.path_info(req)
-    tokens
+    tokens = CowboyReq.path_info(req)
   end
 
   defp wait_for_version_after(vreq, path, long_poll_timeout) do
