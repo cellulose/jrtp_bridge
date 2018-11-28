@@ -167,7 +167,8 @@ defmodule JrtpBridge do
       {{"application", "merge-patch+json", []}, :rfc7386_acceptor},
       {{"application", "json", []}, :json_acceptor},
       {{"application", "x-firmware", []}, :firmware_acceptor},
-      {{"application", "file", []}, :file_acceptor}
+      {{"application", "file", []}, :file_acceptor},
+      {{"application", "x-device-lock", []}, :device_lock_acceptor}
     ], req, state}
   end
 
@@ -211,6 +212,15 @@ defmodule JrtpBridge do
         {:ok, req} = CowboyReq.reply(404, [], req)
         {:halt, req, state}
       fa -> fa.upload_acceptor(req, state)
+    end
+  end
+
+  def device_lock_acceptor(req, state) do
+    case Dict.get(state, :device_lock_acceptor) do
+      nil ->
+        {:ok, req} = CowboyReq.reply(404, [], req)
+        {:halt, req, state}
+      dla -> dla.device_lock_acceptor(req, state)
     end
   end
 
